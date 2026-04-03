@@ -3,6 +3,7 @@ import {
   encodeProjectDir,
   decodeProjectDir,
   presetPath,
+  templatePath,
 } from '../../src/core/paths.js';
 
 describe('encodeProjectDir', () => {
@@ -22,9 +23,20 @@ describe('decodeProjectDir', () => {
 });
 
 describe('presetPath', () => {
-  it('should return path with settings- prefix and .json suffix', () => {
+  it('should return path under ~/.ccc/presets/', () => {
     const p = presetPath('deepseek');
-    expect(p).toContain('settings-deepseek.json');
-    expect(p).toContain('.claude');
+    expect(p).toContain('.ccc');
+    expect(p).toContain('presets');
+    expect(p).toContain('deepseek.json');
+    expect(p).not.toContain('settings-');
+  });
+});
+
+describe('templatePath', () => {
+  it('should return path under ~/.ccc/templates/', () => {
+    const p = templatePath('my-template');
+    expect(p).toContain('.ccc');
+    expect(p).toContain('templates');
+    expect(p).toContain('my-template.json');
   });
 });

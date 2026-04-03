@@ -13,21 +13,39 @@ export const BLOCKLIST_FILE = path.join(PLUGINS_DIR, 'blocklist.json');
 export const PROJECTS_DIR = path.join(CLAUDE_DIR, 'projects');
 export const BACKUPS_DIR = path.join(CLAUDE_DIR, 'backups');
 
+// ccc own data directory
+export const CCC_DIR = path.join(os.homedir(), '.ccc');
+export const PRESETS_DIR = path.join(CCC_DIR, 'presets');
+export const TEMPLATES_DIR = path.join(CCC_DIR, 'templates');
+
 export function presetPath(name: string): string {
-  return path.join(CLAUDE_DIR, `settings-${name}.json`);
+  return path.join(PRESETS_DIR, `${name}.json`);
 }
 
 export function scanPresetNames(): string[] {
   try {
-    const files = fs.readdirSync(CLAUDE_DIR);
+    fs.ensureDirSync(PRESETS_DIR);
+    const files = fs.readdirSync(PRESETS_DIR);
     return files
-      .filter(
-        (f) =>
-          f.startsWith('settings-') &&
-          f.endsWith('.json') &&
-          f !== 'settings.json',
-      )
-      .map((f) => f.slice('settings-'.length, -'.json'.length))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.slice(0, -'.json'.length))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+export function templatePath(name: string): string {
+  return path.join(TEMPLATES_DIR, `${name}.json`);
+}
+
+export function scanTemplateNames(): string[] {
+  try {
+    fs.ensureDirSync(TEMPLATES_DIR);
+    const files = fs.readdirSync(TEMPLATES_DIR);
+    return files
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.slice(0, -'.json'.length))
       .sort();
   } catch {
     return [];

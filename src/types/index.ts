@@ -38,3 +38,19 @@ export interface ExportData {
     blocklist: Blocklist;
   };
 }
+
+export interface TemplateVariable {
+  key: string;
+  description: string;
+  defaultValue?: string;
+  required: boolean;
+  sensitive?: boolean;
+}
+
+export interface Template {
+  name: string;
+  description: string;
+  isBuiltin: boolean;
+  settings: Settings;
+  variables: TemplateVariable[];
+}

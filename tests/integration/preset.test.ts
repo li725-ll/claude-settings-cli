@@ -8,16 +8,15 @@ import { PresetSwitcher } from '../../src/core/switcher.js';
 
 // Use a temp directory for all tests
 let tmpDir: string;
-let originalClaudeDir: string;
 
 describe('Preset integration tests', () => {
   beforeEach(async () => {
     tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ccc-test-'));
 
-    // Override CLAUDE_DIR by creating settings files in tmp
-    // We test the logic directly without monkey-patching paths
     const settingsDir = path.join(tmpDir, '.claude');
+    const presetsDir = path.join(tmpDir, '.ccc', 'presets');
     await fs.ensureDir(settingsDir);
+    await fs.ensureDir(presetsDir);
 
     // Create test settings.json
     await fs.writeJson(path.join(settingsDir, 'settings.json'), {
@@ -28,8 +27,8 @@ describe('Preset integration tests', () => {
       language: '中文',
     });
 
-    // Create test preset
-    await fs.writeJson(path.join(settingsDir, 'settings-test.json'), {
+    // Create test preset in new location
+    await fs.writeJson(path.join(presetsDir, 'test.json'), {
       env: {
         ANTHROPIC_BASE_URL: 'https://test.com',
         ANTHROPIC_AUTH_TOKEN: 'test-token',
@@ -75,9 +74,16 @@ describe('Preset integration tests', () => {
     expect(backups.length).toBe(1);
   });
 
+  it('should read preset from new ~/.ccc/presets/ location', async () => {
+    const presetPath = path.join(tmpDir, '.ccc', 'presets', 'test.json');
+    const preset = await fs.readJson(presetPath);
+    expect(preset.env.ANTHROPIC_BASE_URL).toBe('https://test.com');
+    expect(preset.env.ANTHROPIC_AUTH_TOKEN).toBe('test-token');
+  });
+
   it('should switch preset by copying file', async () => {
     const settingsPath = path.join(tmpDir, '.claude', 'settings.json');
-    const presetPath = path.join(tmpDir, '.claude', 'settings-test.json');
+    const presetPath = path.join(tmpDir, '.ccc', 'presets', 'test.json');
 
     const preset = await fs.readJson(presetPath);
     await fs.writeJson(settingsPath, preset, { spaces: 2 });
@@ -87,12 +93,12 @@ describe('Preset integration tests', () => {
     expect(result.env.ANTHROPIC_AUTH_TOKEN).toBe('test-token');
   });
 
-  it('should scan preset names', async () => {
-    const settingsDir = path.join(tmpDir, '.claude');
-    const files = await fs.readdir(settingsDir);
+  it('should scan preset names from new location', async () => {
+    const presetsDir = path.join(tmpDir, '.ccc', 'presets');
+    const files = await fs.readdir(presetsDir);
     const presets = files
-      .filter((f) => f.startsWith('settings-') && f.endsWith('.json') && f !== 'settings.json')
-      .map((f) => f.slice('settings-'.length, -'.json'.length))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.slice(0, -'.json'.length))
       .sort();
 
     expect(presets).toEqual(['test']);

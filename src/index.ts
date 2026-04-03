@@ -6,7 +6,8 @@ import { pluginCommand } from './commands/plugin.js';
 import { projectCommand } from './commands/project.js';
 import { ioCommand, importCommand } from './commands/io.js';
 import { backupCommand } from './commands/backup.js';
-import { interactivePresetMenu } from './commands/interactive.js';
+import { templateCommand } from './commands/template.js';
+import { startRepl } from './commands/repl.js';
 import { ConfigReader } from './core/reader.js';
 import { maskValue } from './schema/settings.js';
 
@@ -24,6 +25,7 @@ program.addCommand(projectCommand);
 program.addCommand(ioCommand);
 program.addCommand(importCommand);
 program.addCommand(backupCommand);
+program.addCommand(templateCommand);
 
 program
   .command('current')
@@ -76,9 +78,9 @@ program
     }
   });
 
-// Show interactive menu when no arguments provided
+// Show REPL when no arguments provided
 if (process.argv.length <= 2) {
-  interactivePresetMenu();
+  startRepl();
 } else {
   program.parse();
 }

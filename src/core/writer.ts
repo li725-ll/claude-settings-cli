@@ -1,5 +1,5 @@
 import fs from 'fs-extra';
-import { SETTINGS_FILE, presetPath } from './paths.js';
+import { SETTINGS_FILE, PRESETS_DIR, presetPath } from './paths.js';
 import { BackupManager } from '../utils/backup.js';
 import type { Settings } from '../schema/settings.js';
 
@@ -8,6 +8,8 @@ export class ConfigWriter {
     filePath: string,
     data: unknown,
   ): Promise<void> {
+    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+    await fs.ensureDir(dir);
     const tmp = filePath + '.tmp.' + Date.now();
     await fs.writeJson(tmp, data, { spaces: 2 });
     await fs.rename(tmp, filePath);
@@ -24,6 +26,7 @@ export class ConfigWriter {
   }
 
   static async savePreset(name: string, settings: Settings): Promise<void> {
+    await fs.ensureDir(PRESETS_DIR);
     await this.atomicWrite(presetPath(name), settings);
   }
 
