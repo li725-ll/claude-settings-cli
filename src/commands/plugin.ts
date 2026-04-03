@@ -4,18 +4,19 @@ import { ConfigReader } from '../core/reader.js';
 import { ConfigWriter } from '../core/writer.js';
 import { success } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { t } from '../i18n.js';
 
 export const pluginCommand = new Command('plugin')
-  .description('Manage plugins');
+  .description(t('plugin_desc'));
 
 pluginCommand
   .command('list')
-  .description('List all installed plugins')
+  .description(t('plugin_list_desc'))
   .action(() => {
     try {
       const pluginsData = ConfigReader.readInstalledPlugins();
       if (!pluginsData) {
-        console.log(chalk.dim('  No plugins installed.'));
+        console.log(chalk.dim(t('plugin_none')));
         return;
       }
 
@@ -26,18 +27,18 @@ pluginCommand
       console.log('');
       const entries = Object.entries(pluginsData.plugins);
       if (entries.length === 0) {
-        console.log(chalk.dim('  No plugins installed.'));
+        console.log(chalk.dim(t('plugin_none')));
       }
       for (const [pluginId, versions] of entries) {
         const isBlocked = pluginId in blocklist;
         const isEnabled = enabledPlugins[pluginId] === true;
         const status = isBlocked
-          ? chalk.red('blocked')
+          ? chalk.red(t('plugin_blocked'))
           : isEnabled
-            ? chalk.green('enabled')
-            : chalk.dim('disabled');
+            ? chalk.green(t('plugin_enabled'))
+            : chalk.dim(t('plugin_disabled'));
         const latest = versions[versions.length - 1];
-        console.log(`  ${pluginId} v${latest.version} (${status})`);
+        console.log(t('plugin_entry', { id: pluginId, version: latest.version, status }));
       }
       console.log('');
     } catch (err) {
@@ -47,7 +48,7 @@ pluginCommand
 
 pluginCommand
   .command('enable <pluginId>')
-  .description('Enable a plugin')
+  .description(t('plugin_enable_desc'))
   .action(async (pluginId: string) => {
     try {
       const settings = ConfigReader.readSettings();
@@ -56,7 +57,7 @@ pluginCommand
       }
       settings.enabledPlugins[pluginId] = true;
       await ConfigWriter.writeSettings(settings);
-      success(`Enabled plugin "${pluginId}"`);
+      success(t('plugin_enabled_success', { id: pluginId }));
     } catch (err) {
       handleError(err);
     }
@@ -64,7 +65,7 @@ pluginCommand
 
 pluginCommand
   .command('disable <pluginId>')
-  .description('Disable a plugin')
+  .description(t('plugin_disable_desc'))
   .action(async (pluginId: string) => {
     try {
       const settings = ConfigReader.readSettings();
@@ -72,7 +73,7 @@ pluginCommand
         settings.enabledPlugins[pluginId] = false;
       }
       await ConfigWriter.writeSettings(settings);
-      success(`Disabled plugin "${pluginId}"`);
+      success(t('plugin_disabled_success', { id: pluginId }));
     } catch (err) {
       handleError(err);
     }

@@ -5,15 +5,16 @@ import { ConfigWriter } from '../core/writer.js';
 import { readJsonSafe } from '../utils/safe-json.js';
 import { success, spinner } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { t } from '../i18n.js';
 import type { ExportData } from '../types/index.js';
 
 export const ioCommand = new Command('export')
-  .description('Export configuration to a file')
-  .option('-o, --output <file>', 'Output file path')
-  .option('--include-plugins', 'Include plugin data')
+  .description(t('io_export_desc'))
+  .option('-o, --output <file>', t('io_output_opt'))
+  .option('--include-plugins', t('io_include_plugins_opt'))
   .action(async (opts: { output?: string; includePlugins?: boolean }) => {
     try {
-      const s = spinner('Exporting configuration...');
+      const s = spinner(t('io_exporting'));
       const settings = ConfigReader.readSettings();
       const presets = ConfigReader.listPresets();
 
@@ -40,19 +41,19 @@ export const ioCommand = new Command('export')
       const outputPath = opts.output ?? `ccc-export-${date}.json`;
       await fs.writeJson(outputPath, exportData, { spaces: 2 });
 
-      s.succeed(`Configuration exported to ${outputPath}`);
+      s.succeed(t('io_exported', { path: outputPath }));
     } catch (err) {
       handleError(err);
     }
   });
 
 export const importCommand = new Command('import')
-  .description('Import configuration from a file')
-  .argument('<file>', 'Configuration file to import')
-  .option('-m, --mode <mode>', 'Import mode: merge or replace', 'merge')
+  .description(t('io_import_desc'))
+  .argument('<file>', t('io_file_arg'))
+  .option('-m, --mode <mode>', t('io_mode_opt'), 'merge')
   .action(async (file: string, opts: { mode: string }) => {
     try {
-      const s = spinner('Importing configuration...');
+      const s = spinner(t('io_importing'));
       const data = (await readJsonSafe(file)) as ExportData;
 
       if (opts.mode === 'replace') {
@@ -72,7 +73,7 @@ export const importCommand = new Command('import')
         }
       }
 
-      s.succeed(`Configuration imported from ${file}`);
+      s.succeed(t('io_imported', { file }));
     } catch (err) {
       handleError(err);
     }

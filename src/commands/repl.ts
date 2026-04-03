@@ -7,11 +7,12 @@ import { PresetSwitcher } from '../core/switcher.js';
 import { TemplateManager } from '../core/templates.js';
 import { maskValue } from '../schema/settings.js';
 import { success, spinner } from '../utils/logger.js';
+import { t } from '../i18n.js';
 
 export async function startRepl(): Promise<void> {
   console.log('');
-  console.log(chalk.cyan.bold('  Claude Code Config (ccc)'));
-  console.log(chalk.dim('  Type /help for available commands'));
+  console.log(chalk.cyan.bold(t('repl_banner')));
+  console.log(chalk.dim(t('repl_hint')));
   console.log('');
 
   while (true) {
@@ -19,7 +20,7 @@ export async function startRepl(): Promise<void> {
       {
         type: 'input',
         name: 'cmd',
-        message: '>',
+        message: t('repl_prompt'),
       },
     ]);
 
@@ -44,20 +45,20 @@ export async function startRepl(): Promise<void> {
             break;
           case 'quit':
           case 'exit':
-            console.log(chalk.dim('  Bye!'));
+            console.log(chalk.dim(t('repl_bye')));
             return;
           default:
-            console.log(chalk.yellow(`  Unknown command: /${cmd}`));
-            console.log(chalk.dim('  Type /help for available commands'));
+            console.log(chalk.yellow(t('repl_unknown_cmd', { cmd })));
+            console.log(chalk.dim(t('repl_hint')));
         }
       } catch (err) {
         if (err instanceof Error) {
-          console.log(chalk.red(`  Error: ${err.message}`));
+          console.log(chalk.red(t('repl_error', { msg: err.message })));
         }
       }
     } else {
-      console.log(chalk.yellow(`  Unknown input: ${input}`));
-      console.log(chalk.dim('  Type /help for available commands'));
+      console.log(chalk.yellow(t('repl_unknown_input', { input })));
+      console.log(chalk.dim(t('repl_hint')));
     }
 
     console.log('');
@@ -66,12 +67,12 @@ export async function startRepl(): Promise<void> {
 
 function printHelp(): void {
   console.log('');
-  console.log(chalk.bold('  Available commands:'));
-  console.log('  /preset    - List and switch presets');
-  console.log('  /template  - List and apply templates');
-  console.log('  /current   - Show current config');
-  console.log('  /help      - Show this help');
-  console.log('  /quit      - Exit');
+  console.log(chalk.bold(t('repl_help_title')));
+  console.log(t('repl_help_preset'));
+  console.log(t('repl_help_template'));
+  console.log(t('repl_help_current'));
+  console.log(t('repl_help_help'));
+  console.log(t('repl_help_quit'));
 }
 
 function handleCurrent(): void {
@@ -81,13 +82,13 @@ function handleCurrent(): void {
 
     console.log('');
     if (active) {
-      console.log(chalk.green(`  Active preset: ${active}`));
+      console.log(chalk.green(`  ${t('prog_active_preset', { name: active }).trim()}`));
     } else {
-      console.log(chalk.dim('  Active preset: (custom)'));
+      console.log(chalk.dim(`  ${t('prog_active_preset_custom').trim()}`));
     }
 
     if (settings.env.ANTHROPIC_BASE_URL) {
-      console.log(`  Base URL: ${settings.env.ANTHROPIC_BASE_URL}`);
+      console.log(t('prog_base_url', { url: settings.env.ANTHROPIC_BASE_URL }));
     }
 
     const models = [
@@ -96,22 +97,22 @@ function handleCurrent(): void {
       settings.env.ANTHROPIC_DEFAULT_HAIKU_MODEL,
     ].filter(Boolean);
     if (models.length > 0) {
-      console.log(`  Models: ${models.join(', ')}`);
+      console.log(t('prog_models', { models: models.join(', ') }));
     }
 
     if (settings.env.ANTHROPIC_AUTH_TOKEN) {
       console.log(
-        `  Token: ${maskValue('TOKEN', settings.env.ANTHROPIC_AUTH_TOKEN)}`,
+        t('prog_token', { token: maskValue('TOKEN', settings.env.ANTHROPIC_AUTH_TOKEN) }),
       );
     }
 
     const pluginCount = settings.enabledPlugins
       ? Object.values(settings.enabledPlugins).filter(Boolean).length
       : 0;
-    console.log(`  Plugins: ${pluginCount} enabled`);
+    console.log(t('prog_plugins', { count: pluginCount }));
   } catch (err) {
     if (err instanceof Error && err.message.includes('not found')) {
-      console.log(chalk.yellow('  No settings.json found.'));
+      console.log(chalk.yellow(t('prog_no_settings')));
     } else {
       throw err;
     }
@@ -124,17 +125,17 @@ async function handlePreset(): Promise<void> {
 
   console.log('');
   if (presets.length === 0) {
-    console.log(chalk.dim('  No presets found.'));
-    console.log(chalk.dim('  Use /template to create one from a template.'));
+    console.log(chalk.dim(t('repl_no_presets')));
+    console.log(chalk.dim(t('repl_use_template_hint')));
     return;
   }
 
   for (const name of presets) {
     const isActive = name === active;
     if (isActive) {
-      console.log(chalk.green(`    ● ${name}  ← active`));
+      console.log(chalk.green(t('repl_active_marker', { name })));
     } else {
-      console.log(chalk.white(`    ○ ${name}`));
+      console.log(chalk.white(t('repl_inactive_marker', { name })));
     }
   }
   console.log('');
@@ -143,7 +144,7 @@ async function handlePreset(): Promise<void> {
     {
       type: 'list',
       name: 'selected',
-      message: 'Select a preset to switch:',
+      message: t('repl_select_preset'),
       choices: presets.map((p) => ({
         name: p === active ? chalk.green(`${p}  ← active`) : p,
         value: p,
@@ -152,13 +153,13 @@ async function handlePreset(): Promise<void> {
   ]);
 
   if (selected === active) {
-    console.log(chalk.dim('  Already active.'));
+    console.log(chalk.dim(t('repl_already_active')));
     return;
   }
 
-  const s = spinner(`Switching to "${selected}"...`);
+  const s = spinner(t('repl_switching', { name: selected }));
   const { previous, current } = await PresetSwitcher.switchTo(selected);
-  s.succeed(`Switched to preset "${selected}"`);
+  s.succeed(t('repl_switched', { name: selected }));
   PresetSwitcher.printSwitchSummary(previous, current);
 }
 
@@ -167,16 +168,16 @@ async function handleTemplate(): Promise<void> {
 
   console.log('');
   if (templates.length === 0) {
-    console.log(chalk.dim('  No templates found.'));
+    console.log(chalk.dim(t('repl_no_templates')));
     return;
   }
 
-  for (const t of templates) {
-    const tag = t.isBuiltin
+  for (const tmpl of templates) {
+    const tag = tmpl.isBuiltin
       ? chalk.blue('[builtin]')
       : chalk.yellow('[custom] ');
     console.log(
-      `    ${tag} ${chalk.white(t.name.padEnd(20))} ${chalk.dim(`- ${t.description}`)}`,
+      `    ${tag} ${chalk.white(tmpl.name.padEnd(20))} ${chalk.dim(`- ${tmpl.description}`)}`,
     );
   }
   console.log('');
@@ -185,10 +186,10 @@ async function handleTemplate(): Promise<void> {
     {
       type: 'list',
       name: 'selected',
-      message: 'Select a template to apply:',
-      choices: templates.map((t) => ({
-        name: `${t.isBuiltin ? '[builtin]' : '[custom] '} ${t.name} - ${t.description}`,
-        value: t.name,
+      message: t('repl_select_template'),
+      choices: templates.map((tmpl) => ({
+        name: `${tmpl.isBuiltin ? '[builtin]' : '[custom] '} ${tmpl.name} - ${tmpl.description}`,
+        value: tmpl.name,
       })),
     },
   ]);
@@ -197,14 +198,15 @@ async function handleTemplate(): Promise<void> {
 
   const values: Record<string, string> = {};
   for (const v of template.variables) {
+    const defaultVal = v.defaultValue ? ` [${v.defaultValue}]` : '';
     const { val } = await inquirer.prompt([
       {
         type: v.sensitive ? 'password' : 'input',
         name: 'val',
-        message: `${v.description} (${v.key}):${v.defaultValue ? ` [${v.defaultValue}]` : ''}`,
+        message: t('template_var_prompt', { desc: v.description, key: v.key, defaultVal }),
         default: v.defaultValue,
         validate: (input: string) => {
-          if (v.required && !input.trim()) return `${v.key} is required`;
+          if (v.required && !input.trim()) return t('template_var_required', { key: v.key });
           return true;
         },
       },
@@ -219,16 +221,16 @@ async function handleTemplate(): Promise<void> {
     {
       type: 'input',
       name: 'presetName',
-      message: 'Preset name:',
+      message: t('template_preset_name_prompt'),
       validate: (v: string) => {
-        if (!v.trim()) return 'Name is required';
-        if (presets.includes(v.trim())) return 'Preset already exists';
+        if (!v.trim()) return t('template_name_required');
+        if (presets.includes(v.trim())) return t('template_preset_exists');
         return true;
       },
     },
   ]);
 
-  const s = spinner(`Creating preset "${presetName.trim()}"...`);
+  const s = spinner(t('repl_creating', { name: presetName.trim() }));
   await ConfigWriter.savePreset(presetName.trim(), rendered);
-  s.succeed(`Created preset "${presetName.trim()}" from template "${template.name}"`);
+  s.succeed(t('repl_created', { name: presetName.trim(), tmpl: template.name }));
 }

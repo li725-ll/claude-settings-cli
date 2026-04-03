@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { BACKUPS_DIR } from '../core/paths.js';
+import { t } from '../i18n.js';
 
 export class BackupManager {
   static async createBackup(filePath: string): Promise<string | null> {
@@ -29,7 +30,7 @@ export class BackupManager {
   static async restoreBackup(backupName: string, targetPath: string): Promise<void> {
     const backupPath = path.join(BACKUPS_DIR, backupName);
     if (!(await fs.pathExists(backupPath))) {
-      throw new Error(`Backup "${backupName}" not found`);
+      throw new Error(t('util_backup_not_found', { name: backupName }));
     }
     await fs.copy(backupPath, targetPath);
   }

@@ -8,22 +8,23 @@ import { printDiff } from '../core/diff.js';
 import { success, spinner } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
 import { interactivePresetMenu } from './interactive.js';
+import { t } from '../i18n.js';
 
 export const presetCommand = new Command('preset')
-  .description('Manage configuration presets')
+  .description(t('preset_desc'))
   .action(async () => {
     await interactivePresetMenu();
   });
 
 presetCommand
   .command('list')
-  .description('List all available presets')
+  .description(t('preset_list_desc'))
   .action(() => {
     const presets = ConfigReader.listPresets();
     if (presets.length === 0) {
-      console.log(chalk.dim('  No presets found.'));
+      console.log(chalk.dim(t('preset_no_presets')));
       console.log(
-        chalk.dim('  Create one with: ccc preset save <name>'),
+        chalk.dim(t('preset_create_hint')),
       );
       return;
     }
@@ -34,7 +35,7 @@ presetCommand
       const isActive = name === active;
       const marker = isActive ? chalk.green('*') : ' ';
       const label = isActive
-        ? chalk.green(`${name} (active)`)
+        ? chalk.green(t('preset_active_label', { name }))
         : chalk.white(name);
       console.log(`  ${marker} ${label}`);
     }
@@ -43,15 +44,15 @@ presetCommand
 
 presetCommand
   .command('use <name>')
-  .description('Switch to a preset')
-  .option('--no-backup', 'Skip backup of current settings')
+  .description(t('preset_use_desc'))
+  .option('--no-backup', t('preset_no_backup_desc'))
   .action(async (name: string, opts: { backup: boolean }) => {
     try {
-      const s = spinner(`Switching to preset "${name}"...`);
+      const s = spinner(t('preset_switching', { name }));
       const { previous, current } = await PresetSwitcher.switchTo(name, {
         noBackup: !opts.backup,
       });
-      s.succeed(`Switched to preset "${name}"`);
+      s.succeed(t('preset_switched', { name }));
       PresetSwitcher.printSwitchSummary(previous, current);
     } catch (err) {
       handleError(err);
@@ -60,12 +61,12 @@ presetCommand
 
 presetCommand
   .command('save <name>')
-  .description('Save current settings as a preset')
-  .option('--from <file>', 'Save from a specific file instead of current settings')
+  .description(t('preset_save_desc'))
+  .option('--from <file>', t('preset_from_desc'))
   .action(async (name: string, opts: { from?: string }) => {
     try {
       await PresetSwitcher.saveAs(name, opts.from);
-      success(`Saved current settings as preset "${name}"`);
+      success(t('preset_saved', { name }));
     } catch (err) {
       handleError(err);
     }
@@ -73,8 +74,8 @@ presetCommand
 
 presetCommand
   .command('delete <name>')
-  .description('Delete a preset')
-  .option('-y, --yes', 'Skip confirmation')
+  .description(t('preset_delete_desc'))
+  .option('-y, --yes', t('preset_yes_desc'))
   .action(async (name: string, opts: { yes?: boolean }) => {
     try {
       if (!opts.yes) {
@@ -82,17 +83,17 @@ presetCommand
           {
             type: 'confirm',
             name: 'confirm',
-            message: `Are you sure you want to delete preset "${name}"?`,
+            message: t('preset_delete_confirm', { name }),
             default: false,
           },
         ]);
         if (!confirm) {
-          console.log(chalk.dim('Cancelled.'));
+          console.log(chalk.dim(t('cancelled')));
           return;
         }
       }
       await ConfigWriter.deletePreset(name);
-      success(`Deleted preset "${name}"`);
+      success(t('preset_deleted', { name }));
     } catch (err) {
       handleError(err);
     }
@@ -100,11 +101,11 @@ presetCommand
 
 presetCommand
   .command('rename <oldName> <newName>')
-  .description('Rename a preset')
+  .description(t('preset_rename_desc'))
   .action(async (oldName: string, newName: string) => {
     try {
       await ConfigWriter.renamePreset(oldName, newName);
-      success(`Renamed preset "${oldName}" → "${newName}"`);
+      success(t('preset_renamed', { oldName, newName }));
     } catch (err) {
       handleError(err);
     }
@@ -112,7 +113,7 @@ presetCommand
 
 presetCommand
   .command('diff <name1> <name2>')
-  .description('Compare two presets')
+  .description(t('preset_diff_desc'))
   .action(async (name1: string, name2: string) => {
     try {
       const preset1 = ConfigReader.readPreset(name1);

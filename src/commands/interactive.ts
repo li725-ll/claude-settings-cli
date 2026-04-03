@@ -5,6 +5,7 @@ import { ConfigWriter } from '../core/writer.js';
 import { PresetSwitcher } from '../core/switcher.js';
 import { maskValue } from '../schema/settings.js';
 import { success, spinner } from '../utils/logger.js';
+import { t } from '../i18n.js';
 
 type Action =
   | 'use'
@@ -21,9 +22,9 @@ export async function interactivePresetMenu(): Promise<void> {
 
     // Show preset list
     console.log('');
-    console.log(chalk.cyan.bold('  ── Presets ──'));
+    console.log(chalk.cyan.bold(t('interactive_presets_header')));
     if (presets.length === 0) {
-      console.log(chalk.dim('  (none)'));
+      console.log(chalk.dim(t('interactive_none')));
     } else {
       for (const name of presets) {
         const isActive = name === active;
@@ -40,21 +41,21 @@ export async function interactivePresetMenu(): Promise<void> {
       {
         type: 'list',
         name: 'action',
-        message: 'What do you want to do?',
+        message: t('interactive_what_to_do'),
         choices: [
-          { name: '▶  Switch preset', value: 'use' },
-          { name: '＋  Add new preset', value: 'add' },
-          { name: '✎  Edit preset', value: 'edit' },
-          { name: '✕  Delete preset', value: 'delete' },
-          { name: '◉  View preset details', value: 'view' },
+          { name: t('interactive_switch'), value: 'use' },
+          { name: t('interactive_add'), value: 'add' },
+          { name: t('interactive_edit'), value: 'edit' },
+          { name: t('interactive_delete'), value: 'delete' },
+          { name: t('interactive_view'), value: 'view' },
           new inquirer.Separator(),
-          { name: '←  Quit', value: 'quit' },
+          { name: t('interactive_quit'), value: 'quit' },
         ],
       },
     ]);
 
     if (action === 'quit') {
-      console.log(chalk.dim('Bye!'));
+      console.log(chalk.dim(t('interactive_bye')));
       return;
     }
 
@@ -78,7 +79,7 @@ export async function interactivePresetMenu(): Promise<void> {
       }
     } catch (err) {
       if (err instanceof Error) {
-        console.log(chalk.red(`  Error: ${err.message}`));
+        console.log(chalk.red(t('interactive_error', { msg: err.message })));
       }
     }
   }
@@ -89,7 +90,7 @@ async function handleUse(
   active: string | null,
 ): Promise<void> {
   if (presets.length === 0) {
-    console.log(chalk.dim('  No presets to switch. Add one first.'));
+    console.log(chalk.dim(t('interactive_no_presets_switch')));
     return;
   }
 
@@ -97,7 +98,7 @@ async function handleUse(
     {
       type: 'list',
       name: 'name',
-      message: 'Select a preset to switch to:',
+      message: t('interactive_select_switch'),
       choices: presets.map((p) => ({
         name: p === active ? chalk.green(`${p}  ← active`) : p,
         value: p,
@@ -106,13 +107,13 @@ async function handleUse(
   ]);
 
   if (name === active) {
-    console.log(chalk.dim('  Already active.'));
+    console.log(chalk.dim(t('repl_already_active')));
     return;
   }
 
-  const s = spinner(`Switching to "${name}"...`);
+  const s = spinner(t('repl_switching', { name }));
   const { previous, current } = await PresetSwitcher.switchTo(name);
-  s.succeed(`Switched to preset "${name}"`);
+  s.succeed(t('repl_switched', { name }));
   PresetSwitcher.printSwitchSummary(previous, current);
 }
 
@@ -121,11 +122,11 @@ async function handleAdd(presets: string[]): Promise<void> {
     {
       type: 'list',
       name: 'source',
-      message: 'Create preset from:',
+      message: t('interactive_create_from'),
       choices: [
-        { name: 'Current settings.json', value: 'current' },
-        { name: 'Copy from existing preset', value: 'copy' },
-        { name: 'From a file', value: 'file' },
+        { name: t('interactive_from_current'), value: 'current' },
+        { name: t('interactive_from_copy'), value: 'copy' },
+        { name: t('interactive_from_file'), value: 'file' },
       ],
     },
   ]);
@@ -136,23 +137,23 @@ async function handleAdd(presets: string[]): Promise<void> {
       {
         type: 'list',
         name: 'src',
-        message: 'Copy from which preset?',
+        message: t('interactive_copy_which'),
         choices: presets,
       },
       {
         type: 'input',
         name: 'name',
-        message: 'New preset name:',
+        message: t('interactive_new_preset_name'),
         validate: (v: string) => {
-          if (!v.trim()) return 'Name is required';
-          if (presets.includes(v.trim())) return 'Preset already exists';
+          if (!v.trim()) return t('template_name_required');
+          if (presets.includes(v.trim())) return t('template_preset_exists');
           return true;
         },
       },
     ]);
     const srcSettings = ConfigReader.readPreset(answers.src);
     await ConfigWriter.savePreset(answers.name.trim(), srcSettings);
-    success(`Created preset "${answers.name.trim()}" from "${answers.src}"`);
+    success(t('interactive_created_from', { name: answers.name.trim(), src: answers.src }));
     return;
   }
 
@@ -161,22 +162,22 @@ async function handleAdd(presets: string[]): Promise<void> {
       {
         type: 'input',
         name: 'file',
-        message: 'File path:',
-        validate: (v: string) => (v.trim() ? true : 'Path is required'),
+        message: t('interactive_file_path'),
+        validate: (v: string) => (v.trim() ? true : t('interactive_path_required')),
       },
       {
         type: 'input',
         name: 'name',
-        message: 'New preset name:',
+        message: t('interactive_new_preset_name'),
         validate: (v: string) => {
-          if (!v.trim()) return 'Name is required';
-          if (presets.includes(v.trim())) return 'Preset already exists';
+          if (!v.trim()) return t('template_name_required');
+          if (presets.includes(v.trim())) return t('template_preset_exists');
           return true;
         },
       },
     ]);
     await PresetSwitcher.saveAs(answers.name.trim(), answers.file.trim());
-    success(`Created preset "${answers.name.trim()}" from file`);
+    success(t('interactive_created_from_file', { name: answers.name.trim() }));
     return;
   }
 
@@ -185,10 +186,10 @@ async function handleAdd(presets: string[]): Promise<void> {
     {
       type: 'input',
       name: 'name',
-      message: 'New preset name:',
+      message: t('interactive_new_preset_name'),
       validate: (v: string) => {
-        if (!v.trim()) return 'Name is required';
-        if (presets.includes(v.trim())) return 'Preset already exists';
+        if (!v.trim()) return t('template_name_required');
+        if (presets.includes(v.trim())) return t('template_preset_exists');
         return true;
       },
     },
@@ -196,12 +197,12 @@ async function handleAdd(presets: string[]): Promise<void> {
 
   name = answers.name.trim();
   await PresetSwitcher.saveAs(name);
-  success(`Saved current settings as preset "${name}"`);
+  success(t('interactive_saved_current', { name }));
 }
 
 async function handleEdit(presets: string[]): Promise<void> {
   if (presets.length === 0) {
-    console.log(chalk.dim('  No presets to edit.'));
+    console.log(chalk.dim(t('interactive_no_presets_edit')));
     return;
   }
 
@@ -209,7 +210,7 @@ async function handleEdit(presets: string[]): Promise<void> {
     {
       type: 'list',
       name: 'target',
-      message: 'Select a preset to edit:',
+      message: t('interactive_select_edit'),
       choices: presets,
     },
   ]);
@@ -244,11 +245,11 @@ async function handleEdit(presets: string[]): Promise<void> {
     {
       type: 'list',
       name: 'editAction',
-      message: `Editing preset "${target}":`,
+      message: t('interactive_editing', { name: target }),
       choices: [
-        { name: 'Modify a field', value: 'modify' },
-        { name: 'Add new env variable', value: 'add-env' },
-        { name: 'Remove a field', value: 'remove' },
+        { name: t('interactive_modify_field'), value: 'modify' },
+        { name: t('interactive_add_env'), value: 'add-env' },
+        { name: t('interactive_remove_field'), value: 'remove' },
       ],
     },
   ]);
@@ -258,7 +259,7 @@ async function handleEdit(presets: string[]): Promise<void> {
       {
         type: 'list',
         name: 'field',
-        message: 'Select field to modify:',
+        message: t('interactive_select_modify'),
         choices: allFields.map((f) => ({
           name: `${f.key}: ${JSON.stringify(f.value)}`,
           value: f.key,
@@ -271,7 +272,7 @@ async function handleEdit(presets: string[]): Promise<void> {
       {
         type: 'input',
         name: 'newVal',
-        message: `New value for ${field}:`,
+        message: t('interactive_new_value', { field }),
         default: String(currentVal),
       },
     ]);
@@ -295,32 +296,32 @@ async function handleEdit(presets: string[]): Promise<void> {
     }
 
     await ConfigWriter.savePreset(target, settings);
-    success(`Updated ${field}`);
+    success(t('interactive_updated', { field }));
   } else if (editAction === 'add-env') {
     const answers = await inquirer.prompt<{ key: string; value: string }>([
       {
         type: 'input',
         name: 'key',
-        message: 'ENV variable name:',
-        validate: (v: string) => (v.trim() ? true : 'Key is required'),
+        message: t('interactive_env_name'),
+        validate: (v: string) => (v.trim() ? true : t('interactive_key_required')),
       },
       {
         type: 'input',
         name: 'value',
-        message: 'Value:',
-        validate: (v: string) => (v.trim() ? true : 'Value is required'),
+        message: t('interactive_value_prompt'),
+        validate: (v: string) => (v.trim() ? true : t('interactive_value_required')),
       },
     ]);
 
     settings.env[answers.key.trim()] = answers.value.trim();
     await ConfigWriter.savePreset(target, settings);
-    success(`Added env.${answers.key.trim()}`);
+    success(t('interactive_added_env', { key: answers.key.trim() }));
   } else if (editAction === 'remove') {
     const { field } = await inquirer.prompt<{ field: string }>([
       {
         type: 'list',
         name: 'field',
-        message: 'Select field to remove:',
+        message: t('interactive_select_remove'),
         choices: allFields.map((f) => f.key),
       },
     ]);
@@ -330,7 +331,7 @@ async function handleEdit(presets: string[]): Promise<void> {
     }
 
     await ConfigWriter.savePreset(target, settings);
-    success(`Removed ${field}`);
+    success(t('interactive_removed', { field }));
   }
 }
 
@@ -339,7 +340,7 @@ async function handleDelete(
   active: string | null,
 ): Promise<void> {
   if (presets.length === 0) {
-    console.log(chalk.dim('  No presets to delete.'));
+    console.log(chalk.dim(t('interactive_no_presets_delete')));
     return;
   }
 
@@ -347,7 +348,7 @@ async function handleDelete(
     {
       type: 'list',
       name: 'name',
-      message: 'Select a preset to delete:',
+      message: t('interactive_select_delete'),
       choices: presets.map((p) => ({
         name: p === active ? `${p}  ← active` : p,
         value: p,
@@ -359,23 +360,23 @@ async function handleDelete(
     {
       type: 'confirm',
       name: 'confirm',
-      message: `Delete preset "${name}"? This cannot be undone.`,
+      message: t('interactive_delete_confirm', { name }),
       default: false,
     },
   ]);
 
   if (!confirm) {
-    console.log(chalk.dim('  Cancelled.'));
+    console.log(chalk.dim(t('interactive_cancelled')));
     return;
   }
 
   await ConfigWriter.deletePreset(name);
-  success(`Deleted preset "${name}"`);
+  success(t('interactive_deleted', { name }));
 }
 
 async function handleView(presets: string[]): Promise<void> {
   if (presets.length === 0) {
-    console.log(chalk.dim('  No presets to view.'));
+    console.log(chalk.dim(t('interactive_no_presets_view')));
     return;
   }
 
@@ -383,7 +384,7 @@ async function handleView(presets: string[]): Promise<void> {
     {
       type: 'list',
       name: 'name',
-      message: 'Select a preset to view:',
+      message: t('interactive_select_view'),
       choices: presets,
     },
   ]);
@@ -410,7 +411,7 @@ async function handleView(presets: string[]): Promise<void> {
   const pluginCount = settings.enabledPlugins
     ? Object.values(settings.enabledPlugins).filter(Boolean).length
     : 0;
-  console.log(`  ${chalk.dim('plugins')}: ${pluginCount} enabled`);
+  console.log(t('interactive_plugins_count', { count: pluginCount }));
   console.log('');
 }
 

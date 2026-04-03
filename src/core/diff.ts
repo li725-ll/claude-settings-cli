@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { t } from '../i18n.js';
 
 export function diffObjects(
   obj1: Record<string, unknown>,
@@ -52,9 +53,9 @@ export function printDiff(
 ): void {
   const lines = diffObjects(obj1, obj2);
   if (lines.length === 0) {
-    console.log(chalk.dim('  No differences found.'));
+    console.log(chalk.dim(t('diff_no_differences')));
   } else {
-    console.log(chalk.dim(`  Comparing ${label1} → ${label2}:\n`));
+    console.log(chalk.dim(t('diff_comparing', { label1, label2 })));
     for (const line of lines) {
       console.log(line);
     }

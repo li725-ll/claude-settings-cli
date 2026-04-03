@@ -4,11 +4,12 @@ import { ConfigWriter } from './writer.js';
 import { readJsonSafeSync } from '../utils/safe-json.js';
 import type { Settings } from '../schema/settings.js';
 import type { Template, TemplateVariable } from '../types/index.js';
+import { t } from '../i18n.js';
 
 const BUILTIN_TEMPLATES: Template[] = [
   {
     name: 'api-proxy',
-    description: '国内 API 代理 (兼容 Anthropic API)',
+    description: t('tmpl_builtin_api_proxy_desc'),
     isBuiltin: true,
     settings: {
       env: {
@@ -19,13 +20,13 @@ const BUILTIN_TEMPLATES: Template[] = [
     variables: [
       {
         key: 'API_KEY',
-        description: '代理服务的 API Key',
+        description: t('tmpl_builtin_api_proxy_key_desc'),
         required: true,
         sensitive: true,
       },
       {
         key: 'BASE_URL',
-        description: '代理服务的 Base URL',
+        description: t('tmpl_builtin_api_proxy_url_desc'),
         defaultValue: 'http://localhost:3000',
         required: true,
       },
@@ -33,7 +34,7 @@ const BUILTIN_TEMPLATES: Template[] = [
   },
   {
     name: 'custom-model',
-    description: '自定义模型配置',
+    description: t('tmpl_builtin_custom_model_desc'),
     isBuiltin: true,
     settings: {
       env: {
@@ -45,19 +46,19 @@ const BUILTIN_TEMPLATES: Template[] = [
     variables: [
       {
         key: 'SONNET_MODEL',
-        description: 'Sonnet 模型 ID',
+        description: t('tmpl_builtin_sonnet_desc'),
         defaultValue: 'claude-sonnet-4-20250514',
         required: false,
       },
       {
         key: 'OPUS_MODEL',
-        description: 'Opus 模型 ID',
+        description: t('tmpl_builtin_opus_desc'),
         defaultValue: 'claude-opus-4-20250514',
         required: false,
       },
       {
         key: 'HAIKU_MODEL',
-        description: 'Haiku 模型 ID',
+        description: t('tmpl_builtin_haiku_desc'),
         defaultValue: 'claude-haiku-35-20241022',
         required: false,
       },
@@ -65,7 +66,7 @@ const BUILTIN_TEMPLATES: Template[] = [
   },
   {
     name: 'proxy-with-models',
-    description: '代理服务 + 自定义模型',
+    description: t('tmpl_builtin_proxy_models_desc'),
     isBuiltin: true,
     settings: {
       env: {
@@ -77,25 +78,25 @@ const BUILTIN_TEMPLATES: Template[] = [
     variables: [
       {
         key: 'API_KEY',
-        description: '代理服务的 API Key',
+        description: t('tmpl_builtin_api_proxy_key_desc'),
         required: true,
         sensitive: true,
       },
       {
         key: 'BASE_URL',
-        description: '代理服务的 Base URL',
+        description: t('tmpl_builtin_api_proxy_url_desc'),
         required: true,
       },
       {
         key: 'SONNET_MODEL',
-        description: 'Sonnet 模型 ID',
+        description: t('tmpl_builtin_sonnet_desc'),
         required: false,
       },
     ],
   },
   {
     name: 'permissive',
-    description: '宽松权限 + 跳过危险模式提示',
+    description: t('tmpl_builtin_permissive_desc'),
     isBuiltin: true,
     settings: {
       env: {},
@@ -144,7 +145,7 @@ export class TemplateManager {
     await fs.ensureDir(TEMPLATES_DIR);
     const template = {
       name,
-      description: description ?? `Custom template: ${name}`,
+      description: description ?? t('tmpl_custom_desc', { name }),
       settings,
       variables,
     };

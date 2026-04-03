@@ -7,6 +7,7 @@ import { PresetNotFoundError } from '../utils/errors.js';
 import { SETTINGS_FILE } from './paths.js';
 import { SettingsSchema, type Settings } from '../schema/settings.js';
 import { diffObjects } from './diff.js';
+import { t } from '../i18n.js';
 
 export class PresetSwitcher {
   static async switchTo(
@@ -44,7 +45,7 @@ export class PresetSwitcher {
       current as Record<string, unknown>,
     );
     if (lines.length === 0) {
-      console.log('  No changes in configuration.');
+      console.log(t('switcher_no_changes'));
     } else {
       for (const line of lines) {
         console.log(line);

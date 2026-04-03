@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import { t } from '../i18n.js';
 
 export class CccError extends Error {
   constructor(
@@ -12,23 +13,20 @@ export class CccError extends Error {
 
 export class PresetNotFoundError extends CccError {
   constructor(name: string) {
-    super(
-      `Preset "${name}" not found. Run "ccc preset list" to see available presets.`,
-      'PRESET_NOT_FOUND',
-    );
+    super(t('err_preset_not_found', { name }), 'PRESET_NOT_FOUND');
   }
 }
 
 export class InvalidConfigError extends CccError {
   constructor(filePath: string, message: string) {
-    super(`Invalid config in ${filePath}:\n${message}`, 'INVALID_CONFIG');
+    super(t('err_invalid_config', { filePath, message }), 'INVALID_CONFIG');
   }
 }
 
 export class ConfigReadError extends CccError {
   constructor(filePath: string, cause?: Error) {
     super(
-      `Failed to read ${filePath}: ${cause?.message ?? 'unknown error'}`,
+      t('err_read_failed', { filePath, cause: cause?.message ?? t('err_unknown') }),
       'CONFIG_READ_ERROR',
     );
   }
@@ -37,7 +35,7 @@ export class ConfigReadError extends CccError {
 export class ConfigWriteError extends CccError {
   constructor(filePath: string, cause?: Error) {
     super(
-      `Failed to write ${filePath}: ${cause?.message ?? 'unknown error'}`,
+      t('err_write_failed', { filePath, cause: cause?.message ?? t('err_unknown') }),
       'CONFIG_WRITE_ERROR',
     );
   }
@@ -45,11 +43,11 @@ export class ConfigWriteError extends CccError {
 
 export function handleError(err: unknown): never {
   if (err instanceof CccError) {
-    console.error(chalk.red(`Error: ${err.message}`));
+    console.error(chalk.red(t('err_handle_error', { msg: err.message })));
   } else if (err instanceof Error) {
-    console.error(chalk.red(`Error: ${err.message}`));
+    console.error(chalk.red(t('err_handle_error', { msg: err.message })));
   } else {
-    console.error(chalk.red(`Unknown error: ${String(err)}`));
+    console.error(chalk.red(t('err_handle_unknown', { msg: String(err) })));
   }
   process.exit(1);
 }

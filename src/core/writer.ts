@@ -2,6 +2,7 @@ import fs from 'fs-extra';
 import { SETTINGS_FILE, PRESETS_DIR, presetPath } from './paths.js';
 import { BackupManager } from '../utils/backup.js';
 import type { Settings } from '../schema/settings.js';
+import { t } from '../i18n.js';
 
 export class ConfigWriter {
   static async atomicWrite(
@@ -38,10 +39,10 @@ export class ConfigWriter {
     const oldPath = presetPath(oldName);
     const newPath = presetPath(newName);
     if (!(await fs.pathExists(oldPath))) {
-      throw new Error(`Preset "${oldName}" not found`);
+      throw new Error(t('writer_preset_not_found', { name: oldName }));
     }
     if (await fs.pathExists(newPath)) {
-      throw new Error(`Preset "${newName}" already exists`);
+      throw new Error(t('writer_preset_already_exists', { name: newName }));
     }
     await fs.move(oldPath, newPath);
   }

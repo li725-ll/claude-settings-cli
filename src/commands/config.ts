@@ -5,14 +5,15 @@ import { ConfigWriter } from '../core/writer.js';
 import { maskValue } from '../schema/settings.js';
 import { success } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { t } from '../i18n.js';
 
 export const configCommand = new Command('config')
-  .description('Get/set/show configuration values');
+  .description(t('config_desc'));
 
 configCommand
   .command('show')
-  .description('Show current configuration')
-  .option('--full', 'Show sensitive values without masking')
+  .description(t('config_show_desc'))
+  .option('--full', t('config_full_desc'))
   .action((opts: { full?: boolean }) => {
     try {
       const settings = ConfigReader.readSettings();
@@ -26,13 +27,13 @@ configCommand
 
 configCommand
   .command('get <path>')
-  .description('Get a configuration value (e.g., env.ANTHROPIC_BASE_URL)')
+  .description(t('config_get_desc'))
   .action((pathStr: string) => {
     try {
       const settings = ConfigReader.readSettings();
       const value = getNestedValue(settings, pathStr);
       if (value === undefined) {
-        console.log(chalk.dim(`  ${pathStr} is not set`));
+        console.log(chalk.dim(`  ${t('config_not_set', { path: pathStr })}`));
       } else {
         console.log(JSON.stringify(value, null, 2));
       }
@@ -43,14 +44,14 @@ configCommand
 
 configCommand
   .command('set <path> <value>')
-  .description('Set a configuration value')
+  .description(t('config_set_desc'))
   .action(async (pathStr: string, value: string) => {
     try {
       const settings = ConfigReader.readSettings();
       const parsed = inferType(value);
       setNestedValue(settings, pathStr, parsed);
       await ConfigWriter.writeSettings(settings);
-      success(`Set ${pathStr} = ${JSON.stringify(parsed)}`);
+      success(t('config_set_success', { path: pathStr, value: JSON.stringify(parsed) }));
     } catch (err) {
       handleError(err);
     }
@@ -58,13 +59,13 @@ configCommand
 
 configCommand
   .command('unset <path>')
-  .description('Remove a configuration value')
+  .description(t('config_unset_desc'))
   .action(async (pathStr: string) => {
     try {
       const settings = ConfigReader.readSettings();
       unsetNestedValue(settings, pathStr);
       await ConfigWriter.writeSettings(settings);
-      success(`Removed ${pathStr}`);
+      success(t('config_unset_success', { path: pathStr }));
     } catch (err) {
       handleError(err);
     }

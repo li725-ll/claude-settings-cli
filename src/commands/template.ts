@@ -6,52 +6,54 @@ import { ConfigWriter } from '../core/writer.js';
 import { ConfigReader } from '../core/reader.js';
 import { success, spinner } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { t } from '../i18n.js';
 
 export const templateCommand = new Command('template')
-  .description('Manage configuration templates');
+  .description(t('template_desc'));
 
 templateCommand
   .command('list')
-  .description('List all available templates')
+  .description(t('template_list_desc'))
   .action(() => {
     const templates = TemplateManager.listAll();
     if (templates.length === 0) {
-      console.log(chalk.dim('  No templates found.'));
+      console.log(chalk.dim(t('template_no_templates')));
       return;
     }
 
     console.log('');
-    for (const t of templates) {
-      const tag = t.isBuiltin
-        ? chalk.blue('[builtin]')
-        : chalk.yellow('[custom] ');
-      console.log(`  ${tag} ${chalk.white(t.name.padEnd(20))} ${chalk.dim(`- ${t.description}`)}`);
+    for (const tmpl of templates) {
+      const tag = tmpl.isBuiltin
+        ? chalk.blue(t('template_builtin_tag'))
+        : chalk.yellow(t('template_custom_tag') + ' ');
+      console.log(`  ${tag} ${chalk.white(tmpl.name.padEnd(20))} ${chalk.dim(`- ${tmpl.description}`)}`);
     }
     console.log('');
   });
 
 templateCommand
   .command('apply <name>')
-  .description('Apply a template to create a preset')
-  .option('-p, --preset <name>', 'Preset name to create')
+  .description(t('template_apply_desc'))
+  .option('-p, --preset <name>', t('template_preset_opt_desc'))
   .action(async (name: string, opts: { preset?: string }) => {
     try {
       const template = TemplateManager.find(name);
       if (!template) {
-        handleError(new Error(`Template "${name}" not found. Run "ccc template list" to see available templates.`));
+        handleError(new Error(t('template_not_found', { name })));
         return;
       }
 
       const values: Record<string, string> = {};
       for (const v of template.variables) {
+        const defaultVal = v.defaultValue ? ` [${v.defaultValue}]` : '';
         const { val } = await inquirer.prompt([
           {
             type: v.sensitive ? 'password' : 'input',
             name: 'val',
-            message: `${v.description} (${v.key}):${v.defaultValue ? ` [${v.defaultValue}]` : ''}`,
+            message: t('template_var_prompt', { desc: v.description, key: v.key, defaultVal }),
             default: v.defaultValue,
             validate: (input: string) => {
-              if (v.required && !input.trim()) return `${v.key} is required`;
+              if (v.required && !input.trim()) return t('template_var_required', { key: v.key });
               return true;
             },
           },
@@ -68,10 +70,10 @@ templateCommand
           {
             type: 'input',
             name: 'presetName',
-            message: 'Preset name:',
+            message: t('template_preset_name_prompt'),
             validate: (v: string) => {
-              if (!v.trim()) return 'Name is required';
-              if (presets.includes(v.trim())) return 'Preset already exists';
+              if (!v.trim()) return t('template_name_required');
+              if (presets.includes(v.trim())) return t('template_preset_exists');
               return true;
             },
           },
@@ -80,9 +82,9 @@ templateCommand
       }
 
       const finalName = presetName!;
-      const s = spinner(`Creating preset "${finalName}" from template "${template.name}"...`);
+      const s = spinner(t('template_creating', { name: finalName, tmpl: template.name }));
       await ConfigWriter.savePreset(finalName, rendered);
-      s.succeed(`Created preset "${finalName}" from template "${template.name}"`);
+      s.succeed(t('template_created', { name: finalName, tmpl: template.name }));
     } catch (err) {
       handleError(err);
     }
@@ -90,12 +92,12 @@ templateCommand
 
 templateCommand
   .command('save <name>')
-  .description('Save current settings as a template')
-  .option('-d, --description <desc>', 'Template description')
+  .description(t('template_save_desc'))
+  .option('-d, --description <desc>', t('template_description_opt'))
   .action(async (name: string, opts: { description?: string }) => {
     try {
-      if (TemplateManager.listBuiltin().some((t) => t.name === name)) {
-        handleError(new Error(`Cannot overwrite builtin template "${name}"`));
+      if (TemplateManager.listBuiltin().some((tmpl) => tmpl.name === name)) {
+        handleError(new Error(t('template_overwrite_builtin', { name })));
         return;
       }
 
@@ -109,7 +111,7 @@ templateCommand
           [],
           opts.description,
         );
-        success(`Saved template "${name}"`);
+        success(t('template_saved', { name }));
         return;
       }
 
@@ -117,7 +119,7 @@ templateCommand
         {
           type: 'checkbox',
           name: 'selected',
-          message: 'Select env variables to make into template variables:',
+          message: t('template_select_vars'),
           choices: envKeys.map((k) => ({ name: k, value: k })),
         },
       ]);
@@ -128,13 +130,13 @@ templateCommand
           {
             type: 'input',
             name: 'desc',
-            message: `Description for ${key}:`,
+            message: t('template_var_desc_prompt', { key }),
             default: key,
           },
           {
             type: 'confirm',
             name: 'sensitive',
-            message: `Is ${key} sensitive? (will mask input)`,
+            message: t('template_var_sensitive', { key }),
             default: false,
           },
         ]);
@@ -157,7 +159,7 @@ templateCommand
         variables,
         opts.description,
       );
-      success(`Saved template "${name}"`);
+      success(t('template_saved', { name }));
     } catch (err) {
       handleError(err);
     }
@@ -165,17 +167,17 @@ templateCommand
 
 templateCommand
   .command('delete <name>')
-  .description('Delete a custom template')
-  .option('-y, --yes', 'Skip confirmation')
+  .description(t('template_delete_desc'))
+  .option('-y, --yes', t('template_delete_yes'))
   .action(async (name: string, opts: { yes?: boolean }) => {
     try {
       const template = TemplateManager.find(name);
       if (!template) {
-        handleError(new Error(`Template "${name}" not found`));
+        handleError(new Error(t('template_not_found_simple', { name })));
         return;
       }
       if (template.isBuiltin) {
-        handleError(new Error(`Cannot delete builtin template "${name}"`));
+        handleError(new Error(t('template_delete_builtin', { name })));
         return;
       }
 
@@ -184,18 +186,18 @@ templateCommand
           {
             type: 'confirm',
             name: 'confirm',
-            message: `Are you sure you want to delete template "${name}"?`,
+            message: t('template_delete_confirm', { name }),
             default: false,
           },
         ]);
         if (!confirm) {
-          console.log(chalk.dim('Cancelled.'));
+          console.log(chalk.dim(t('cancelled')));
           return;
         }
       }
 
       await TemplateManager.deleteTemplate(name);
-      success(`Deleted template "${name}"`);
+      success(t('template_deleted', { name }));
     } catch (err) {
       handleError(err);
     }
@@ -203,12 +205,12 @@ templateCommand
 
 templateCommand
   .command('view <name>')
-  .description('View template details')
+  .description(t('template_view_desc'))
   .action(async (name: string) => {
     try {
       const template = TemplateManager.find(name);
       if (!template) {
-        handleError(new Error(`Template "${name}" not found`));
+        handleError(new Error(t('template_not_found_simple', { name })));
         return;
       }
 
@@ -216,24 +218,24 @@ templateCommand
       console.log(chalk.bold(`  ${template.name}`));
       console.log(`  ${chalk.dim(template.description)}`);
       if (template.isBuiltin) {
-        console.log(`  ${chalk.blue('[builtin]')}`);
+        console.log(`  ${chalk.blue(t('template_builtin_tag'))}`);
       }
 
       if (template.variables.length > 0) {
         console.log('');
-        console.log(chalk.bold('  Variables:'));
+        console.log(chalk.bold(t('template_variables_header')));
         for (const v of template.variables) {
           const parts = [`  - ${v.key}`];
           parts.push(chalk.dim(`(${v.description})`));
           if (v.defaultValue) parts.push(chalk.dim(`default: ${v.defaultValue}`));
-          if (v.required) parts.push(chalk.red('required'));
-          if (v.sensitive) parts.push(chalk.yellow('sensitive'));
+          if (v.required) parts.push(chalk.red(t('template_required')));
+          if (v.sensitive) parts.push(chalk.yellow(t('template_sensitive')));
           console.log(parts.join(' '));
         }
       }
 
       console.log('');
-      console.log(chalk.bold('  Settings:'));
+      console.log(chalk.bold(t('template_settings_header')));
       for (const [k, v] of Object.entries(template.settings.env ?? {})) {
         console.log(`  - ${k}: ${v}`);
       }
