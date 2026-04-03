@@ -479,6 +479,10 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
     zh: '  /template  - 列出和应用模板',
     en: '  /template  - List and apply templates',
   },
+  repl_help_create: {
+    zh: '  /create    - 引导式创建新预设',
+    en: '  /create    - Guided creation of a new preset',
+  },
   repl_help_current: {
     zh: '  /current   - 显示当前配置',
     en: '  /current   - Show current config',
@@ -842,5 +846,116 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
   tmpl_custom_desc: {
     zh: '自定义模板: ${name}',
     en: 'Custom template: ${name}',
+  },
+
+  // ── Create command (create.ts) ──
+  create_desc: {
+    zh: '引导式创建新预设',
+    en: 'Guided creation of a new preset',
+  },
+  create_preset_name_prompt: {
+    zh: '预设名称:',
+    en: 'Preset name:',
+  },
+  create_name_required: {
+    zh: '名称不能为空',
+    en: 'Name is required',
+  },
+  create_name_exists: {
+    zh: '预设 "${name}" 已存在',
+    en: 'Preset "${name}" already exists',
+  },
+  create_optional_hint: {
+    zh: '（可选，按回车跳过）',
+    en: '(optional, press Enter to skip)',
+  },
+  create_default_hint: {
+    zh: '（按回车使用默认值）',
+    en: '(press Enter for default)',
+  },
+  create_skip_option: {
+    zh: '跳过此字段',
+    en: 'Skip this field',
+  },
+  create_field_example: {
+    zh: '示例: ${example}',
+    en: 'Example: ${example}',
+  },
+  create_summary_header: {
+    zh: '  ── 配置摘要 ──',
+    en: '  ── Configuration Summary ──',
+  },
+  create_confirm: {
+    zh: '确认保存？',
+    en: 'Confirm and save?',
+  },
+  create_saved: {
+    zh: '已创建预设 "${name}"',
+    en: 'Created preset "${name}"',
+  },
+  create_cancelled: {
+    zh: '已取消创建。',
+    en: 'Creation cancelled.',
+  },
+  // Field descriptions
+  create_field_header: {
+    zh: '${key}',
+    en: '${key}',
+  },
+  create_api_key_desc: {
+    zh: 'Anthropic API 密钥，用于身份验证',
+    en: 'API key for Anthropic API authentication',
+  },
+  create_api_key_example: {
+    zh: 'sk-ant-api03-xxxxxx',
+    en: 'sk-ant-api03-xxxxxx',
+  },
+  create_auth_token_desc: {
+    zh: 'Auth 令牌，某些代理服务需要此令牌而非 API Key',
+    en: 'Auth token, some proxy services require this instead of API Key',
+  },
+  create_auth_token_example: {
+    zh: 'sk-xxxxxx',
+    en: 'sk-xxxxxx',
+  },
+  create_base_url_desc: {
+    zh: 'API 代理地址，用于转发请求到 Anthropic 或兼容服务',
+    en: 'API proxy URL for forwarding requests to Anthropic or compatible services',
+  },
+  create_base_url_example: {
+    zh: 'https://api.example.com',
+    en: 'https://api.example.com',
+  },
+  create_sonnet_model_desc: {
+    zh: '默认 Sonnet 模型 ID',
+    en: 'Default Sonnet model ID',
+  },
+  create_opus_model_desc: {
+    zh: '默认 Opus 模型 ID',
+    en: 'Default Opus model ID',
+  },
+  create_haiku_model_desc: {
+    zh: '默认 Haiku 模型 ID',
+    en: 'Default Haiku model ID',
+  },
+  create_permissions_desc: {
+    zh: '权限模式 — default=正常询问, bypassPermissions=跳过所有权限, acceptEdits=自动接受编辑',
+    en: 'Permission mode — default=normal prompts, bypassPermissions=skip all, acceptEdits=auto-accept edits',
+  },
+  create_language_desc: {
+    zh: '界面语言设置',
+    en: 'Interface language',
+  },
+  create_language_example: {
+    zh: 'zh / en',
+    en: 'zh / en',
+  },
+  create_thinking_desc: {
+    zh: '是否始终启用思维链模式',
+    en: 'Always enable thinking chain mode',
+  },
+  create_dangerous_desc: {
+    zh: '是否跳过危险模式的权限提示',
+    en: 'Skip permission prompts for dangerous mode',
   },
 };
