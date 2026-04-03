@@ -1,6 +1,6 @@
 {
   "name": "claude-settings-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool to manage Claude Code configuration presets",
   "type": "module",
   "bin": {
