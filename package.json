@@ -4,7 +4,7 @@
   "description": "CLI tool to manage Claude Code configuration presets",
   "type": "module",
   "bin": {
-    "ccc": "./bin/ccc.mjs"
+    "ccc": "bin/ccc.mjs"
   },
   "files": [
     "bin/",
@@ -29,6 +29,10 @@
     "preset"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/li725-ll/claude-settings-cli.git"
+  },
   "engines": {
     "node": ">=18"
   },

@@ -6,6 +6,7 @@ import { pluginCommand } from './commands/plugin.js';
 import { projectCommand } from './commands/project.js';
 import { ioCommand, importCommand } from './commands/io.js';
 import { backupCommand } from './commands/backup.js';
+import { interactivePresetMenu } from './commands/interactive.js';
 import { ConfigReader } from './core/reader.js';
 import { maskValue } from './schema/settings.js';
 
@@ -75,4 +76,9 @@ program
     }
   });
 
-program.parse();
+// Show interactive menu when no arguments provided
+if (process.argv.length <= 2) {
+  interactivePresetMenu();
+} else {
+  program.parse();
+}

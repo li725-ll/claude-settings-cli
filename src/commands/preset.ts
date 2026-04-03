@@ -7,9 +7,13 @@ import { PresetSwitcher } from '../core/switcher.js';
 import { printDiff } from '../core/diff.js';
 import { success, spinner } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { interactivePresetMenu } from './interactive.js';
 
 export const presetCommand = new Command('preset')
-  .description('Manage configuration presets');
+  .description('Manage configuration presets')
+  .action(async () => {
+    await interactivePresetMenu();
+  });
 
 presetCommand
   .command('list')
