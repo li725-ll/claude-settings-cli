@@ -1,5 +1,9 @@
 import chalk from 'chalk';
+import inquirer from 'inquirer';
+import inquirerAutocomplete from 'inquirer-autocomplete-prompt';
 import { ConfigReader } from '../core/reader.js';
+
+inquirer.registerPrompt('autocomplete', inquirerAutocomplete);
 import { ConfigWriter } from '../core/writer.js';
 import { PresetSwitcher } from '../core/switcher.js';
 import { TemplateManager } from '../core/templates.js';
@@ -16,14 +20,32 @@ export async function startRepl(): Promise<void> {
   console.log(chalk.dim(t('repl_hint')));
   console.log('');
 
+  const allChoices = [
+    { name: t('repl_choice_preset'), value: '/preset' },
+    { name: t('repl_choice_template'), value: '/template' },
+    { name: t('repl_choice_create'), value: '/create' },
+    { name: t('repl_choice_edit'), value: '/edit' },
+    { name: t('repl_choice_delete'), value: '/delete' },
+    { name: t('repl_choice_current'), value: '/current' },
+    { name: t('repl_choice_help'), value: '/help' },
+    { name: t('repl_choice_quit'), value: '/quit' },
+  ];
+
+  const source = (_answersSoFar: any, input: string) => {
+    if (!input) return allChoices;
+    const q = input.toLowerCase();
+    return allChoices.filter((c) => c.name.toLowerCase().includes(q) || c.value.toLowerCase().includes(q));
+  };
+
   while (true) {
     let answer: { cmd: string };
     try {
       answer = await promptWithAbort<{ cmd: string }>([
         {
-          type: 'input',
+          type: 'autocomplete',
           name: 'cmd',
           message: t('repl_prompt'),
+          source,
         },
       ]);
     } catch (err) {

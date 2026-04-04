@@ -27,8 +27,7 @@ export async function promptWithAbort<T extends Record<string, any>>(
   process.kill = (() => true) as any;
   process.exit = (() => undefined as never) as any;
 
-  const promptModule = inquirer.createPromptModule();
-  const promptPromise: any = promptModule(questions as any, answers);
+  const promptPromise: any = inquirer.prompt(questions as any, answers);
 
   const ui = promptPromise.ui;
   const rl = ui?.rl;

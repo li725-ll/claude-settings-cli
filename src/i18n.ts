@@ -448,8 +448,40 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
     en: '  Type /help for available commands',
   },
   repl_prompt: {
-    zh: '>',
-    en: '>',
+    zh: '选择命令:',
+    en: 'Select a command:',
+  },
+  repl_choice_preset: {
+    zh: '/preset    — 列出和切换预设',
+    en: '/preset    — List and switch presets',
+  },
+  repl_choice_template: {
+    zh: '/template  — 列出和应用模板',
+    en: '/template  — List and apply templates',
+  },
+  repl_choice_create: {
+    zh: '/create    — 引导式创建新预设',
+    en: '/create    — Guided creation of a new preset',
+  },
+  repl_choice_edit: {
+    zh: '/edit      — 编辑已有预设',
+    en: '/edit      — Edit an existing preset',
+  },
+  repl_choice_delete: {
+    zh: '/delete    — 删除已有预设',
+    en: '/delete    — Delete an existing preset',
+  },
+  repl_choice_current: {
+    zh: '/current   — 显示当前配置',
+    en: '/current   — Show current config',
+  },
+  repl_choice_help: {
+    zh: '/help      — 显示帮助',
+    en: '/help      — Show help',
+  },
+  repl_choice_quit: {
+    zh: '/quit      — 退出',
+    en: '/quit      — Exit',
   },
   repl_bye: {
     zh: '  再见！',
