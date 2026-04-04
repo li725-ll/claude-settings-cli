@@ -8,6 +8,7 @@ import { ioCommand, importCommand } from './commands/io.js';
 import { backupCommand } from './commands/backup.js';
 import { templateCommand } from './commands/template.js';
 import { createCommand } from './commands/create.js';
+import { editCommand } from './commands/edit.js';
 import { startRepl } from './commands/repl.js';
 import { ConfigReader } from './core/reader.js';
 import { maskValue } from './schema/settings.js';
@@ -29,6 +30,7 @@ program.addCommand(importCommand);
 program.addCommand(backupCommand);
 program.addCommand(templateCommand);
 program.addCommand(createCommand);
+program.addCommand(editCommand);
 
 program
   .command('current')

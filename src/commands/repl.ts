@@ -6,6 +6,7 @@ import { ConfigWriter } from '../core/writer.js';
 import { PresetSwitcher } from '../core/switcher.js';
 import { TemplateManager } from '../core/templates.js';
 import { runCreate } from './create.js';
+import { runEdit } from './edit.js';
 import { maskValue } from '../schema/settings.js';
 import { success, spinner } from '../utils/logger.js';
 import { t } from '../i18n.js';
@@ -41,6 +42,11 @@ export async function startRepl(): Promise<void> {
           case 'create':
             await runCreate();
             break;
+          case 'edit': {
+            const args = cmd.split(/\s+/).slice(1);
+            await runEdit(args[0] || undefined);
+            break;
+          }
           case 'current':
             handleCurrent();
             break;
@@ -75,6 +81,7 @@ function printHelp(): void {
   console.log(t('repl_help_preset'));
   console.log(t('repl_help_template'));
   console.log(t('repl_help_create'));
+  console.log(t('repl_help_edit'));
   console.log(t('repl_help_current'));
   console.log(t('repl_help_help'));
   console.log(t('repl_help_quit'));

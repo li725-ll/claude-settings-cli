@@ -483,6 +483,10 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
     zh: '  /create    - 引导式创建新预设',
     en: '  /create    - Guided creation of a new preset',
   },
+  repl_help_edit: {
+    zh: '  /edit      - 编辑已有预设',
+    en: '  /edit      - Edit an existing preset',
+  },
   repl_help_current: {
     zh: '  /current   - 显示当前配置',
     en: '  /current   - Show current config',
@@ -957,5 +961,111 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
   create_dangerous_desc: {
     zh: '是否跳过危险模式的权限提示',
     en: 'Skip permission prompts for dangerous mode',
+  },
+
+  // ── Edit command (edit.ts) ──
+  edit_desc: {
+    zh: '编辑已有预设',
+    en: 'Edit an existing preset',
+  },
+  edit_no_presets: {
+    zh: '  没有可编辑的预设。',
+    en: '  No presets to edit.',
+  },
+  edit_select: {
+    zh: '选择要编辑的预设:',
+    en: 'Select a preset to edit:',
+  },
+  edit_preset_not_found: {
+    zh: '预设 "${name}" 未找到',
+    en: 'Preset "${name}" not found',
+  },
+  edit_header: {
+    zh: '  ── 编辑预设 "${name}" ──',
+    en: '  ── Editing preset "${name}" ──',
+  },
+  edit_no_fields: {
+    zh: '  （无字段）',
+    en: '  (no fields)',
+  },
+  edit_what_to_do: {
+    zh: '要做什么？',
+    en: 'What do you want to do?',
+  },
+  edit_modify: {
+    zh: '修改已有字段',
+    en: 'Modify a field',
+  },
+  edit_add_env: {
+    zh: '添加/覆盖环境变量',
+    en: 'Add/overwrite env variable',
+  },
+  edit_remove: {
+    zh: '删除字段',
+    en: 'Remove a field',
+  },
+  edit_view: {
+    zh: '查看当前状态',
+    en: 'View current state',
+  },
+  edit_save: {
+    zh: '保存并退出',
+    en: 'Save and exit',
+  },
+  edit_discard: {
+    zh: '放弃修改',
+    en: 'Discard changes',
+  },
+  edit_select_modify: {
+    zh: '选择要修改的字段:',
+    en: 'Select field to modify:',
+  },
+  edit_new_value: {
+    zh: '${field} 的新值:',
+    en: 'New value for ${field}:',
+  },
+  edit_updated: {
+    zh: '已更新 ${field}',
+    en: 'Updated ${field}',
+  },
+  edit_env_key: {
+    zh: '环境变量名:',
+    en: 'ENV variable name:',
+  },
+  edit_env_key_required: {
+    zh: '变量名不能为空',
+    en: 'Variable name is required',
+  },
+  edit_env_value: {
+    zh: '值:',
+    en: 'Value:',
+  },
+  edit_env_value_required: {
+    zh: '值不能为空',
+    en: 'Value is required',
+  },
+  edit_env_added: {
+    zh: '已设置 env.${key}',
+    en: 'Set env.${key}',
+  },
+  edit_select_remove: {
+    zh: '选择要删除的字段:',
+    en: 'Select field to remove:',
+  },
+  edit_removed: {
+    zh: '已删除 ${field}',
+    en: 'Removed ${field}',
+  },
+  edit_saved: {
+    zh: '已保存预设 "${name}"',
+    en: 'Saved preset "${name}"',
+  },
+  edit_discarded: {
+    zh: '已放弃修改。',
+    en: 'Changes discarded.',
+  },
+  edit_plugins_count: {
+    zh: '  ${count} 个已启用插件',
+    en: '  ${count} plugins enabled',
   },
 };
