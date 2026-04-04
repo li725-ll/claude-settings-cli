@@ -47,6 +47,9 @@ export async function startRepl(): Promise<void> {
             await runEdit(args[0] || undefined);
             break;
           }
+          case 'delete':
+            await handleDelete();
+            break;
           case 'current':
             handleCurrent();
             break;
@@ -82,6 +85,7 @@ function printHelp(): void {
   console.log(t('repl_help_template'));
   console.log(t('repl_help_create'));
   console.log(t('repl_help_edit'));
+  console.log(t('repl_help_delete'));
   console.log(t('repl_help_current'));
   console.log(t('repl_help_help'));
   console.log(t('repl_help_quit'));
@@ -245,4 +249,43 @@ async function handleTemplate(): Promise<void> {
   const s = spinner(t('repl_creating', { name: presetName.trim() }));
   await ConfigWriter.savePreset(presetName.trim(), rendered);
   s.succeed(t('repl_created', { name: presetName.trim(), tmpl: template.name }));
+}
+
+async function handleDelete(): Promise<void> {
+  const presets = ConfigReader.listPresets();
+  if (presets.length === 0) {
+    console.log(chalk.dim(t('repl_no_presets')));
+    return;
+  }
+
+  const active = ConfigReader.detectActivePreset();
+
+  const { selected } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'selected',
+      message: t('repl_delete_select'),
+      choices: presets.map((p) => ({
+        name: p === active ? chalk.green(`${p}  ← active`) : p,
+        value: p,
+      })),
+    },
+  ]);
+
+  const { confirm } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'confirm',
+      message: t('repl_delete_confirm', { name: selected }),
+      default: false,
+    },
+  ]);
+
+  if (!confirm) {
+    console.log(chalk.dim(t('cancelled')));
+    return;
+  }
+
+  await ConfigWriter.deletePreset(selected);
+  success(t('repl_deleted', { name: selected }));
 }

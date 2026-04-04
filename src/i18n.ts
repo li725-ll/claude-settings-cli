@@ -487,6 +487,10 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
     zh: '  /edit      - 编辑已有预设',
     en: '  /edit      - Edit an existing preset',
   },
+  repl_help_delete: {
+    zh: '  /delete    - 删除已有预设',
+    en: '  /delete    - Delete an existing preset',
+  },
   repl_help_current: {
     zh: '  /current   - 显示当前配置',
     en: '  /current   - Show current config',
@@ -546,6 +550,18 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
   repl_created: {
     zh: '已从模板 "${tmpl}" 创建预设 "${name}"',
     en: 'Created preset "${name}" from template "${tmpl}"',
+  },
+  repl_delete_select: {
+    zh: '选择要删除的预设:',
+    en: 'Select a preset to delete:',
+  },
+  repl_delete_confirm: {
+    zh: '确认删除预设 "${name}"？此操作不可撤销。',
+    en: 'Delete preset "${name}"? This cannot be undone.',
+  },
+  repl_deleted: {
+    zh: '已删除预设 "${name}"',
+    en: 'Deleted preset "${name}"',
   },
 
   // ── Interactive menu (interactive.ts) ──
