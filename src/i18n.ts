@@ -455,6 +455,10 @@ const MESSAGES: Record<string, Record<Lang, string>> = {
     zh: '  再见！',
     en: '  Bye!',
   },
+  repl_aborted: {
+    zh: '  已取消，返回主界面。',
+    en: '  Aborted, returning to main prompt.',
+  },
   repl_unknown_cmd: {
     zh: '  未知命令: /${cmd}',
     en: '  Unknown command: /${cmd}',

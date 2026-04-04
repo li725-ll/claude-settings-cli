@@ -4,6 +4,7 @@ import inquirer from 'inquirer';
 import { ConfigReader } from '../core/reader.js';
 import { ConfigWriter } from '../core/writer.js';
 import { success } from '../utils/logger.js';
+import { promptWithAbort, AbortError } from '../utils/prompt.js';
 import { t } from '../i18n.js';
 import type { Settings } from '../types/index.js';
 
@@ -13,7 +14,7 @@ export async function runCreate(): Promise<void> {
   const presets = ConfigReader.listPresets();
 
   // Step 0: Preset name
-  const { name } = await inquirer.prompt<{ name: string }>([
+  const { name } = await promptWithAbort<{ name: string }>([
     {
       type: 'input',
       name: 'name',
@@ -32,7 +33,7 @@ export async function runCreate(): Promise<void> {
   const settings: Settings = { env: {} };
 
   // Step 1: ANTHROPIC_API_KEY (required)
-  const { apiKey } = await inquirer.prompt<{ apiKey: string }>([
+  const { apiKey } = await promptWithAbort<{ apiKey: string }>([
     {
       type: 'password',
       name: 'apiKey',
@@ -43,7 +44,7 @@ export async function runCreate(): Promise<void> {
   settings.env.ANTHROPIC_API_KEY = apiKey.trim();
 
   // Step 2: ANTHROPIC_AUTH_TOKEN (optional)
-  const { authToken } = await inquirer.prompt<{ authToken: string }>([
+  const { authToken } = await promptWithAbort<{ authToken: string }>([
     {
       type: 'password',
       name: 'authToken',
@@ -55,7 +56,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 3: ANTHROPIC_BASE_URL (optional)
-  const { baseUrl } = await inquirer.prompt<{ baseUrl: string }>([
+  const { baseUrl } = await promptWithAbort<{ baseUrl: string }>([
     {
       type: 'input',
       name: 'baseUrl',
@@ -67,7 +68,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 4: SONNET_MODEL (optional, default provided)
-  const { sonnetModel } = await inquirer.prompt<{ sonnetModel: string }>([
+  const { sonnetModel } = await promptWithAbort<{ sonnetModel: string }>([
     {
       type: 'input',
       name: 'sonnetModel',
@@ -80,7 +81,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 5: OPUS_MODEL (optional, default provided)
-  const { opusModel } = await inquirer.prompt<{ opusModel: string }>([
+  const { opusModel } = await promptWithAbort<{ opusModel: string }>([
     {
       type: 'input',
       name: 'opusModel',
@@ -93,7 +94,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 6: HAIKU_MODEL (optional, default provided)
-  const { haikuModel } = await inquirer.prompt<{ haikuModel: string }>([
+  const { haikuModel } = await promptWithAbort<{ haikuModel: string }>([
     {
       type: 'input',
       name: 'haikuModel',
@@ -106,7 +107,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 7: permissions.defaultMode (list + Skip)
-  const { permMode } = await inquirer.prompt<{ permMode: string }>([
+  const { permMode } = await promptWithAbort<{ permMode: string }>([
     {
       type: 'list',
       name: 'permMode',
@@ -125,7 +126,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 8: language (list + Skip)
-  const { langChoice } = await inquirer.prompt<{ langChoice: string }>([
+  const { langChoice } = await promptWithAbort<{ langChoice: string }>([
     {
       type: 'list',
       name: 'langChoice',
@@ -143,7 +144,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 9: alwaysThinkingEnabled (list + Skip)
-  const { thinking } = await inquirer.prompt<{ thinking: string }>([
+  const { thinking } = await promptWithAbort<{ thinking: string }>([
     {
       type: 'list',
       name: 'thinking',
@@ -161,7 +162,7 @@ export async function runCreate(): Promise<void> {
   }
 
   // Step 10: skipDangerousModePermissionPrompt (list + Skip)
-  const { dangerous } = await inquirer.prompt<{ dangerous: string }>([
+  const { dangerous } = await promptWithAbort<{ dangerous: string }>([
     {
       type: 'list',
       name: 'dangerous',
@@ -199,7 +200,7 @@ export async function runCreate(): Promise<void> {
   }
   console.log('');
 
-  const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
+  const { confirm } = await promptWithAbort<{ confirm: boolean }>([
     {
       type: 'confirm',
       name: 'confirm',
@@ -223,6 +224,7 @@ export const createCommand = new Command('create')
     try {
       await runCreate();
     } catch (err) {
+      if (err instanceof AbortError) return;
       if (err instanceof Error) {
         console.log(chalk.red(t('interactive_error', { msg: err.message })));
       }

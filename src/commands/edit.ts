@@ -6,6 +6,7 @@ import { ConfigWriter } from '../core/writer.js';
 import { maskValue } from '../schema/settings.js';
 import { success } from '../utils/logger.js';
 import { handleError } from '../utils/errors.js';
+import { promptWithAbort, AbortError } from '../utils/prompt.js';
 import { t } from '../i18n.js';
 import type { Settings } from '../types/index.js';
 
@@ -21,7 +22,7 @@ export async function runEdit(presetName?: string): Promise<void> {
   // Step 1: Select preset
   let name = presetName;
   if (!name) {
-    const answer = await inquirer.prompt<{ name: string }>([
+    const answer = await promptWithAbort<{ name: string }>([
       {
         type: 'list',
         name: 'name',
@@ -42,7 +43,7 @@ export async function runEdit(presetName?: string): Promise<void> {
 
   // Step 3: Loop editing
   while (true) {
-    const { action } = await inquirer.prompt<{ action: EditAction }>([
+    const { action } = await promptWithAbort<{ action: EditAction }>([
       {
         type: 'list',
         name: 'action',
@@ -83,7 +84,7 @@ export async function runEdit(presetName?: string): Promise<void> {
         continue;
       }
 
-      const { field } = await inquirer.prompt<{ field: string }>([
+      const { field } = await promptWithAbort<{ field: string }>([
         {
           type: 'list',
           name: 'field',
@@ -96,7 +97,7 @@ export async function runEdit(presetName?: string): Promise<void> {
       ]);
 
       const currentVal = allFields.find((f) => f.key === field)?.value;
-      const { newVal } = await inquirer.prompt<{ newVal: string }>([
+      const { newVal } = await promptWithAbort<{ newVal: string }>([
         {
           type: 'input',
           name: 'newVal',
@@ -109,7 +110,7 @@ export async function runEdit(presetName?: string): Promise<void> {
       applyField(settings, field, parsed);
       success(t('edit_updated', { field }));
     } else if (action === 'add-env') {
-      const answers = await inquirer.prompt<{ key: string; value: string }>([
+      const answers = await promptWithAbort<{ key: string; value: string }>([
         {
           type: 'input',
           name: 'key',
@@ -133,7 +134,7 @@ export async function runEdit(presetName?: string): Promise<void> {
         continue;
       }
 
-      const { field } = await inquirer.prompt<{ field: string }>([
+      const { field } = await promptWithAbort<{ field: string }>([
         {
           type: 'list',
           name: 'field',
@@ -155,6 +156,7 @@ export const editCommand = new Command('edit')
     try {
       await runEdit(name);
     } catch (err) {
+      if (err instanceof AbortError) return;
       handleError(err);
     }
   });

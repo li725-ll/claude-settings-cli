@@ -1,6 +1,4 @@
-import * as readline from 'node:readline';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import { ConfigReader } from '../core/reader.js';
 import { ConfigWriter } from '../core/writer.js';
 import { PresetSwitcher } from '../core/switcher.js';
@@ -9,6 +7,7 @@ import { runCreate } from './create.js';
 import { runEdit } from './edit.js';
 import { maskValue } from '../schema/settings.js';
 import { success, spinner } from '../utils/logger.js';
+import { promptWithAbort, AbortError } from '../utils/prompt.js';
 import { t } from '../i18n.js';
 
 export async function startRepl(): Promise<void> {
@@ -18,15 +17,21 @@ export async function startRepl(): Promise<void> {
   console.log('');
 
   while (true) {
-    const answer = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'cmd',
-        message: t('repl_prompt'),
-      },
-    ]);
+    let answer: { cmd: string };
+    try {
+      answer = await promptWithAbort<{ cmd: string }>([
+        {
+          type: 'input',
+          name: 'cmd',
+          message: t('repl_prompt'),
+        },
+      ]);
+    } catch (err) {
+      if (err instanceof AbortError) continue;
+      throw err;
+    }
 
-    const input = answer.cmd.trim();
+    const input = (answer.cmd ?? '').trim();
     if (!input) continue;
 
     if (input.startsWith('/')) {
@@ -65,7 +70,10 @@ export async function startRepl(): Promise<void> {
             console.log(chalk.dim(t('repl_hint')));
         }
       } catch (err) {
-        if (err instanceof Error) {
+        if (err instanceof AbortError) {
+          console.log('');
+          console.log(chalk.dim(t('repl_aborted')));
+        } else if (err instanceof Error) {
           console.log(chalk.red(t('repl_error', { msg: err.message })));
         }
       }
@@ -156,7 +164,7 @@ async function handlePreset(): Promise<void> {
   }
   console.log('');
 
-  const { selected } = await inquirer.prompt([
+  const { selected } = await promptWithAbort<{ selected: string }>([
     {
       type: 'list',
       name: 'selected',
@@ -198,7 +206,7 @@ async function handleTemplate(): Promise<void> {
   }
   console.log('');
 
-  const { selected } = await inquirer.prompt([
+  const { selected } = await promptWithAbort<{ selected: string }>([
     {
       type: 'list',
       name: 'selected',
@@ -215,7 +223,7 @@ async function handleTemplate(): Promise<void> {
   const values: Record<string, string> = {};
   for (const v of template.variables) {
     const defaultVal = v.defaultValue ? ` [${v.defaultValue}]` : '';
-    const { val } = await inquirer.prompt([
+    const { val } = await promptWithAbort<{ val: string }>([
       {
         type: v.sensitive ? 'password' : 'input',
         name: 'val',
@@ -233,7 +241,7 @@ async function handleTemplate(): Promise<void> {
   const rendered = TemplateManager.renderSettings(template, values);
 
   const presets = ConfigReader.listPresets();
-  const { presetName } = await inquirer.prompt([
+  const { presetName } = await promptWithAbort<{ presetName: string }>([
     {
       type: 'input',
       name: 'presetName',
@@ -260,7 +268,7 @@ async function handleDelete(): Promise<void> {
 
   const active = ConfigReader.detectActivePreset();
 
-  const { selected } = await inquirer.prompt([
+  const { selected } = await promptWithAbort<{ selected: string }>([
     {
       type: 'list',
       name: 'selected',
@@ -272,7 +280,7 @@ async function handleDelete(): Promise<void> {
     },
   ]);
 
-  const { confirm } = await inquirer.prompt([
+  const { confirm } = await promptWithAbort<{ confirm: boolean }>([
     {
       type: 'confirm',
       name: 'confirm',
